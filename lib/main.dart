@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:quizzler/quizbrain.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
 void main() => runApp(Quizzler());
 
@@ -25,12 +27,57 @@ class QuizPage extends StatefulWidget {
 }
 
 class _QuizPageState extends State<QuizPage> {
-  List<Icon> scoreKeeper = [
+  List<Icon> scoreKeeper = [];
+  int score;
+  final quizBrain = QuizBrain();
 
-                  Icon(Icons.check, color: Colors.green),
-                  Icon(Icons.check, color: Colors.green),
-                  Icon(Icons.check, color: Colors.green),
-  ];
+  void addScore(bool answerState) {
+    setState(() {
+      if (answerState) {
+        score++;
+        scoreKeeper.add(
+          Icon(Icons.check, color: Colors.green),
+        );
+      } else {
+        scoreKeeper.add(
+          Icon(Icons.close, color: Colors.red),
+        );
+      }
+      quizBrain.nextQuestion();
+    });
+  }
+
+  void doAllProcess(bool buttonState) {
+    if (quizBrain.isFinished()) {
+      addScore(quizBrain.getAnswer() == buttonState);
+      Alert(
+        context: context,
+        type: AlertType.success,
+        title: "Game is finished.",
+        desc: "You have answered all the questions. \n\nYou got $score/${quizBrain.getTotalQuestions()}! ",
+        buttons: [
+          DialogButton(
+            child: Text(
+              "OKAY",
+              style: TextStyle(color: Colors.white, fontSize: 20),
+            ),
+            onPressed: () {
+              Navigator.pop(context);
+              setState(() {
+                score = 0;
+                scoreKeeper.clear();
+                quizBrain.resetQuestionNumber();
+              });
+            },
+            width: 120,
+          )
+        ],
+      ).show();
+    } else {
+      addScore(quizBrain.getAnswer() == buttonState);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -45,7 +92,7 @@ class _QuizPageState extends State<QuizPage> {
               padding: EdgeInsets.all(10.0),
               child: Center(
                 child: Text(
-                  'This is where the question text will go.',
+                  quizBrain.getQuestion(),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 25.0,
@@ -69,11 +116,7 @@ class _QuizPageState extends State<QuizPage> {
                   ),
                 ),
                 onPressed: () {
-                  setState(() {
-                    scoreKeeper.add(
-                      Icon(Icons.check, color: Colors.green),
-                    );
-                  });
+                  doAllProcess(true);
                 },
               ),
             ),
@@ -91,7 +134,7 @@ class _QuizPageState extends State<QuizPage> {
                   ),
                 ),
                 onPressed: () {
-                  //The user picked false.
+                  doAllProcess(false);
                 },
               ),
             ),
@@ -102,9 +145,3 @@ class _QuizPageState extends State<QuizPage> {
     );
   }
 }
-
-/*
-question1: 'You can lead a cow down stairs but not up stairs.', false,
-question2: 'Approximately one quarter of human bones are in the feet.', true,
-question3: 'A slug\'s blood is green.', true,
-*/
