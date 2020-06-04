@@ -28,7 +28,7 @@ class QuizPage extends StatefulWidget {
 
 class _QuizPageState extends State<QuizPage> {
   List<Icon> scoreKeeper = [];
-  int score;
+  int score = 0;
   final quizBrain = QuizBrain();
 
   void addScore(bool answerState) {
